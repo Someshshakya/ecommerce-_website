@@ -32,8 +32,8 @@ module.exports = class{
 //                                 t.string('description');
 //                                 t.string('size');
 //                                 t.string('color');
-//                                 t.integer("category_id").unsigned();
-//                                 t.foreign('category_id').references('id').inTable('category');
+                                // t.integer("category_id").unsigned();
+                                // t.foreign('category_id').references('id').inTable('category');
 //                                 t.integer("Skeeper_id").unsigned();
 //                                 t.foreign('Skeeper_id').references('id').inTable('Skeeper_product');
 //                             },console.log('shopkkeepers product table created..'))

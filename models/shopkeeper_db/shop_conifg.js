@@ -5,7 +5,10 @@ module.exports = knex.schema.hasTable('shopkeer_details')
                 .then(async (exists)=>{
                     if (!exists){
                         return await knex.schema.alterTable('shopkeer_details',(t)=>{
-                            t.string("db_name")
+                            t.integer("LastModifiedDate");
+                            t.integer("CreatedDate");
+                            t.integer("isDeleted");
+
                         },console.log('user_id field added in the shopkeeprs_details '))
                     }
                 }).catch((err)=>{
@@ -29,6 +32,10 @@ module.exports = knex.schema.hasTable('shopkeer_details')
 //                                 t.string('email').unique();
 //                                 t.integer('mobile_no')
 //                                 t.integer('pin_code');
+                        // t.integer("LastModifiedDate");
+                        // t.integer("CreatedDate");
+                        // t.integer("isDeleted");
+
 //                             },console.log('shopkeeper table created..'))
 //                         }
                     // }).catch((err)=>{

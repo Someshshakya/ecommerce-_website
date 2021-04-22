@@ -5,11 +5,11 @@ const Verify = require('../../Auth/jwt')
 
 
 
-// GET request to add the product and shopping  cart
-router.post('/:id',Verify,shopping_cart.add_product);
+// GET request to add the product in shopping  cart
+router.post('/',Verify,shopping_cart.add_product);
 
 
-// GET request to display the orders 
+// GET request to display the cart items
 router.get('/',Verify,shopping_cart.myorder);
 
 

@@ -34,6 +34,9 @@ app.use(cookieParser());
 // to create shopkeeper_product table
 // require('./models/shopkeer/shopkeeper_product');
 
+// to  create and update shop_keeper details
+require('./models/shopkeeper_db/shop_conifg')
+
 
 
 // working of Routers
@@ -54,6 +57,10 @@ app.use('/shopping_cart',shopping_cart);
 app.use('/orders',orders_Router);
 app.use('/address',addressRouter);
 app.use('/shopkeeper',shopkeeperRouter);
+
+
+
+
 // home page
 app.get('/',(req,res)=>{
     res.send({Msg: "You are welcome on home page!"})

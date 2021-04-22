@@ -43,16 +43,37 @@ exports.create_shop = async (req, res) => {
                     }).catch((err) => {
                         console.log(err)
                     })
+                    db_config.schema.hasTable('orders_recieved')
+                    .then(async (exists) => {
+                        if (!exists) {
+                            return await db_config.schema.createTable('orders_recieved', (t) => {
+                                t.increments('id').primary();
+                                t.string('buyer_id');
+                                t.string('product_id');
+                                t.string('shopkeer_id');
+                                t.string('size');
+                                t.string('color');
+                            }, console.log('orders_recieved table created successfully! '))
+                        }
+                    }).catch((err) => {
+                        console.log(err)
+                    })
+
+
 
             }
             // wait for 5 sec to create the db
             setTimeout(con, 4000);
             await Services.create_db(newName);
             // await Connectt.toCreate_table(c)
+            
 
             // to create the table to register shopkeepers in db
             // require('../models/shopkeeper_db/shop_conifg');
-            function shopkeeper(user_id, db_name, shopkeeper_name, email, shop_name, description, gst_no, address_line_1, address_line_2, state, city, country, mobile_no, pin_code) {
+            function shopkeeper(LastModifiedDate, CreatedDate, isDeleted, user_id, db_name, shopkeeper_name, email, shop_name, description, gst_no, address_line_1, address_line_2, state, city, country, mobile_no, pin_code) {
+                this.LastModifiedDate = LastModifiedDate;
+                this.CreatedDate = CreatedDate;
+                this.isDeleted = isDeleted;
                 this.user_id = user_id;
                 this.db_name = db_name;
                 this.shopkeeper_name = shopkeeper_name;
@@ -69,8 +90,12 @@ exports.create_shop = async (req, res) => {
                 this.pin_code = pin_code;
             }
             var b = req.body;
-            let user_id = req.user_id.id;
-            let newShopkeeper = new shopkeeper(user_id, newName, b.shopkeeper_name, b.email, b.shop_name, b.description, b.gst_no, b.address_line_1, b.address_line_2, b.state, b.city, b.country, b.mobile_no, b.pin_code);
+            var user_id = req.user_id.id;
+            var user_id = req.user_id.id;
+            var LastModifiedDate = null;
+            var CreatedDate = moment().format("YYYY MM DD");
+            var isDeleted = 0;
+            let newShopkeeper = new shopkeeper(LastModifiedDate, CreatedDate, isDeleted,  user_id, newName, b.shopkeeper_name, b.email, b.shop_name, b.description, b.gst_no, b.address_line_1, b.address_line_2, b.state, b.city, b.country, b.mobile_no, b.pin_code);
             const Shopkeeper_id = await knex('shopkeer_details').insert(newShopkeeper);
             if (Shopkeeper_id != 0) {
                 let keeper_id = Shopkeeper_id[0];

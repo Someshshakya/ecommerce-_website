@@ -5,7 +5,7 @@ const Verify = require('../../Auth/jwt')
 
 
 
-// GET request to add the product and shopping  cart
+// GET request to create the orders
 router.get('/',Verify,orders.create_order);
 
 // GET request to display your orders

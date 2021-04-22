@@ -4,7 +4,12 @@ module.exports = knex.schema.hasTable('users')
                         .then(async (exists)=>{
                             if (!exists){
                             return await knex.schema.alterTable('users',(t)=>{
-                                    t.integer("is_shop").defaultTo(0).alter();    
+                                
+                                    t.integer("isDeleted").defaultTo(0);
+                                    // t.dropColumn("isDeleted");
+                                    // t.string('address',100);
+                                    // t.string('CreatedDate');
+                                    // t.string('LastModifiedDate');  
                                 },console.log('column updated'))
                             }
                         }).catch((err)=>{
@@ -24,10 +29,11 @@ module.exports = knex.schema.hasTable('users')
                     //             t.string("status").defaultTo(0);
                     //             t.integer("is_shop").defaultTo(0);
                     //             t.integer("phone");
-                                
+                                    
                     //         },console.log('table created'))
                     //     }
                     // }).catch((err)=>{
                     //     console.log(err)
                     // })
-                    
+                   
+

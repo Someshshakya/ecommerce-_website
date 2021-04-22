@@ -3,6 +3,7 @@ const send_otp = require('../twilio');
 const jwt = require('jsonwebtoken');
 const knex = require('../models/db_config')
 const bcrypt = require('bcrypt');
+const moment = require('moment');
 // to display home page
 exports.homePage = (req,res)=>{
     res.send({msg: "you are welcome on Home page...  "})
@@ -12,17 +13,33 @@ exports.homePage = (req,res)=>{
 // to create a user 
 exports.registration = async(req,res)=>{
         try {
-            let user_data = req.body;
-            let password = user_data.password;
-            let no_ = "+91" + user_data.phone;
+            let body = req.body;
+            let no_ = "+91" + body.phone;
             let otp = await send_otp(no_);
+                        
+            function users_details(first_name, last_name ,email, phone, password, address, CreatedDate, LastModifiedDate) {
+                this.first_name = first_name;
+                this.last_name = last_name;
+                this.email = email;
+                this.phone = phone;
+                this.password = password;
+                this.address = address;
+                this.CreatedDate = CreatedDate;
+                this.LastModifiedDate = LastModifiedDate;
+            }
+            // data from the  body
+            var i = req.body;
+            // to bcrypt the password!
+            var password = i.password;
+            passowrd = await bcrypt.hash(password,10);
+            // to create the create_date with moment() npm 
+            var CreatedDate = moment().format("YYYY MM DD");
+            var LastModifiedDate = moment().format("YYYY MM DD");
+
+            var user_data = new users_details(i.first_name, i.last_name, i.email, i.phone, passowrd, i.address, CreatedDate, LastModifiedDate)
             
-            console.log("otp:- ",otp)
-            user_data['password'] = await bcrypt.hash(password,10)
             let id = await knex('users').insert(user_data);
-            console.log("user id " ,id)
             res.cookie('otp',otp);
-            res.cookie('id',id[0])
             res.send({Msg : `${user_data.first_name} ${user_data.last_name} Registered Successfully... `})
             
         } catch (error) {
