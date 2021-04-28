@@ -18,3 +18,9 @@ module.exports = async(no) =>{
             console.log(error)
         }            
 }
+
+
+// {   
+//     "email" : "ram@gmail.com",
+//     "password" : "hello somesh"
+// }

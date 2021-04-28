@@ -16,6 +16,9 @@ router.delete('/delete/:id',Verify,sKeeper.delete_product);
 // PUT request to update the product details
 router.put('/edit_product/:id',Verify,sKeeper.update_product);
 
+// get request to display all products
+router.get('/products',sKeeper.display_allproduct);
+
 module.exports = router;
 
 // {

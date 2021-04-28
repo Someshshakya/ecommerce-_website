@@ -31,17 +31,20 @@ exports.registration = async(req,res)=>{
             var i = req.body;
             // to bcrypt the password!
             var password = i.password;
-            passowrd = await bcrypt.hash(password,10);
+            if (password!=undefined){
+                passowrd = await bcrypt.hash(password,10,);
+                var CreatedDate = moment().format("YYYY MM DD");
+                var LastModifiedDate = moment().format("YYYY MM DD");
+                var user_data = new users_details(i.first_name, i.last_name, i.email, i.phone, passowrd, i.address, CreatedDate, LastModifiedDate)
+                let id = await knex('users').insert(user_data);
+                res.cookie('otp',otp);
+                console.log(`${user_data.first_name} ${user_data.last_name} Registered Successfully... `)
+                res.send({Msg : `${user_data.first_name} ${user_data.last_name} Registered Successfully... `})
+            
+            }else{
+                res.send({msg:"Enter your deatils!"})
+            }
             // to create the create_date with moment() npm 
-            var CreatedDate = moment().format("YYYY MM DD");
-            var LastModifiedDate = moment().format("YYYY MM DD");
-
-            var user_data = new users_details(i.first_name, i.last_name, i.email, i.phone, passowrd, i.address, CreatedDate, LastModifiedDate)
-            
-            let id = await knex('users').insert(user_data);
-            res.cookie('otp',otp);
-            res.send({Msg : `${user_data.first_name} ${user_data.last_name} Registered Successfully... `})
-            
         } catch (error) {
             console.log(error);
             res.send({err_msg:error})
@@ -69,25 +72,32 @@ exports.user_login =  async (req,res)=>{
                 try {
                     var passwordd = req.body.password;
                     let emaill = req.body.email;
-                    var user_data = await knex('users').select("*").where('email',emaill)                        
-                    if (user_data.length!=0){
-                        let hasspas = user_data[0].password;
-                        const bol = await bcrypt.compare(passwordd,hasspas)
-                        if (bol){
-                            let b = user_data[0];
-                            let pay = {
-                                "id" : b.id
-                                }
-                            let token = await jwt.sign(pay,"Your_secret_key");
-                            res.cookie("user_token",token);
-                            res.send({msg:"you logged in successfully... 😄"})
+                    if (req.body.email!=undefined){
+                        var user_data = await knex('users').select("*").where('email',emaill)                        
+                        if (user_data.length!=0){
+                            let hasspas = user_data[0].password;
+                            const bol = await bcrypt.compare(passwordd,hasspas)
+                            if (bol){
+                                let b = user_data[0];
+                                let pay = {
+                                    "id" : b.id
+                                    }
+                                let token = await jwt.sign(pay,"Your_secret_key");
+                                res.cookie("user_token",token);
+                                
+                                console.log({msg:"you logged in successfully... 😄"});
+                                res.send({msg:"you logged in successfully... 😄"})
+                            }else{
+                                res.send({msg: "your passowrd is incorrect..."})
+                            }
                         }else{
-                            res.send({msg: "your passowrd is incorrect..."})
-                        }
+                            console.log('plz Signup first ....😄')
+                            res.send({msg:"plz Signup first ....😄"})
+                        }    
                     }else{
-                        console.log('plz Signup first ....😄')
-                        res.send({msg:"plz Signup first ....😄"})
+                        res.send({msg:"plz enter you email and password!"})
                     }
+                    
                 } catch (error) {
                     console.log(error);
                     res.send({msg:error})

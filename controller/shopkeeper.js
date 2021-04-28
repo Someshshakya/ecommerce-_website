@@ -1,5 +1,5 @@
-const { reservationsUrl } = require('twilio/lib/jwt/taskrouter/util');
 const knex = require('../models/db_config');
+const moment = require('moment')
 
 
 const db_connection = require('../models/shopkeeper_db/shopkeeper_db');
@@ -38,12 +38,14 @@ exports.create_shop = async (req, res) => {
                                 t.string('color');
                                 t.integer("Skeeper_id").unsigned();
                                 t.foreign('Skeeper_id').references('id').inTable('ecommerce_master.shopkeer_details');
+                                t.integer("category_id").unsigned();
+                                t.foreign('category_id').references('id').inTable('ecommerce_master.category');
                             }, console.log('shopkkeepers product table created..'))
                         }
                     }).catch((err) => {
                         console.log(err)
                     })
-                    db_config.schema.hasTable('orders_recieved')
+                db_config.schema.hasTable('orders_recieved')
                     .then(async (exists) => {
                         if (!exists) {
                             return await db_config.schema.createTable('orders_recieved', (t) => {
@@ -66,7 +68,7 @@ exports.create_shop = async (req, res) => {
             setTimeout(con, 4000);
             await Services.create_db(newName);
             // await Connectt.toCreate_table(c)
-            
+
 
             // to create the table to register shopkeepers in db
             // require('../models/shopkeeper_db/shop_conifg');
@@ -95,7 +97,7 @@ exports.create_shop = async (req, res) => {
             var LastModifiedDate = null;
             var CreatedDate = moment().format("YYYY MM DD");
             var isDeleted = 0;
-            let newShopkeeper = new shopkeeper(LastModifiedDate, CreatedDate, isDeleted,  user_id, newName, b.shopkeeper_name, b.email, b.shop_name, b.description, b.gst_no, b.address_line_1, b.address_line_2, b.state, b.city, b.country, b.mobile_no, b.pin_code);
+            let newShopkeeper = new shopkeeper(LastModifiedDate, CreatedDate, isDeleted, user_id, newName, b.shopkeeper_name, b.email, b.shop_name, b.description, b.gst_no, b.address_line_1, b.address_line_2, b.state, b.city, b.country, b.mobile_no, b.pin_code);
             const Shopkeeper_id = await knex('shopkeer_details').insert(newShopkeeper);
             if (Shopkeeper_id != 0) {
                 let keeper_id = Shopkeeper_id[0];
@@ -117,8 +119,9 @@ exports.create_shop = async (req, res) => {
 // to insert the product in the individuals databases
 exports.insert_product = async (req, res) => {
     try {
-        function product(product_name, description, price, size, color, Skeeper_id) {
-           this.product_name = product_name;
+        function product(category_id, product_name, description, price, size, color, Skeeper_id) {
+            this.category_id = category_id;
+            this.product_name = product_name;
             this.description = description;
             this.price = price;
             this.size = size;
@@ -127,42 +130,42 @@ exports.insert_product = async (req, res) => {
         }
         var i = req.body;
         let user_id = req.user_id.id;
-        let skeeper_details = await knex('shopkeer_details').select("id","db_name")
-                                                        .where('user_id',user_id);
+        let skeeper_details = await knex('shopkeer_details').select("id", "db_name")
+            .where('user_id', user_id);
         // to make configuration with db to insert products
-        async function to_make(){
+        async function to_make() {
             let user_id = req.user_id.id;
-            let skeeper_details = await knex('shopkeer_details').select("id","db_name")
-                                                        .where('user_id',user_id);
+            let skeeper_details = await knex('shopkeer_details').select("id", "db_name")
+                .where('user_id', user_id);
             let db_name = skeeper_details[0].db_name;
-                const db_config = require('knex')({
-                    client: 'mysql',
-                    connection: {
-                        host: '127.0.0.1',
-                        user: 'root',
-                        password: '',
-                        database: `${db_name}`
-                    }
-                },
-                    console.log(`${db_name} database connected..`));
-                    return db_config;
-        }   
-                  
-        if (skeeper_details.length!=0){
+            const db_config = require('knex')({
+                client: 'mysql',
+                connection: {
+                    host: '127.0.0.1',
+                    user: 'root',
+                    password: '',
+                    database: `${db_name}`
+                }
+            },
+                console.log(`${db_name} database connected..`));
+            return db_config;
+        }
+
+        if (skeeper_details.length != 0) {
             let s_id = skeeper_details[0].id;
-                let product_details = new product(i.product_name, i.description, i.price, i.size, i.color, s_id)
-                let configuration_db = await to_make();
-                await configuration_db('shop_product').insert(product_details)
-                .catch((err)=>{
-                    console.log("this is error while inserting products",err);
-                    res.send({product_insert_err:err})
+            let product_details = new product(i.category_id, i.product_name, i.description, i.price, i.size, i.color, s_id)
+            let configuration_db = await to_make();
+            await configuration_db('shop_product').insert(product_details)
+                .catch((err) => {
+                    console.log("this is error while inserting products", err);
+                    res.send({ product_insert_err: err })
                 })
-                // to send the success message for product inerstions
-                res.send({msg:"Your product Inserted Successfully!"})
-                    
+            // to send the success message for product inerstions
+            res.send({ msg: "Your product Inserted Successfully!" })
+
             // res.send("wrking")
-        }else{
-            res.send({msg:"Plz login first"})
+        } else {
+            res.send({ msg: "Plz login first" })
         }
     } catch (error) {
         console.log(error)
@@ -173,54 +176,54 @@ exports.insert_product = async (req, res) => {
 
 // to delete the product
 exports.delete_product = async (req, res) => {
-    try{
-            async function to_make(){
-                let user_id = req.user_id.id;
-                let skeeper_details = await knex('shopkeer_details').select("db_name")
-                                                            .where('user_id',user_id);
-                    
-                let db_name = skeeper_details[0].db_name;
-                    const db_config = require('knex')({
-                        client: 'mysql',
-                        connection: {
-                            host: '127.0.0.1',
-                            user: 'root',
-                            password: '',
-                            database: `${db_name}`
-                        }
-                    },
-                        console.log(`${db_name} database connected..`));
-                        return db_config;
-            }
+    try {
+        async function to_make() {
             let user_id = req.user_id.id;
-            const skeeper_details = await knex('shopkeer_details').select("id")
-                                                            .where('user_id',user_id);
-            if (skeeper_details.length!=0){
-                    let skeeper_id = skeeper_details[0].id;      
-                    let product_id = req.params.id;
-                    let configuration_db = await to_make();
-                    await configuration_db('shop_product').del().where('id',product_id)
-                                                                .where('skeeper_id',skeeper_id)
-                    .catch((err)=>{
-                        console.log("this is error while deleting products",err);
-                        res.send({product_deleting_err:err})
-                    })
-                    // to send the success message for product inerstions
-                    res.send({msg:"Your product deleted Successfully!"})
-                        
-            }else{
-                res.send({msg:"Plz login first"})
-            }
+            let skeeper_details = await knex('shopkeer_details').select("db_name")
+                .where('user_id', user_id);
+
+            let db_name = skeeper_details[0].db_name;
+            const db_config = require('knex')({
+                client: 'mysql',
+                connection: {
+                    host: '127.0.0.1',
+                    user: 'root',
+                    password: '',
+                    database: `${db_name}`
+                }
+            },
+                console.log(`${db_name} database connected..`));
+            return db_config;
+        }
+        let user_id = req.user_id.id;
+        const skeeper_details = await knex('shopkeer_details').select("id")
+            .where('user_id', user_id);
+        if (skeeper_details.length != 0) {
+            let skeeper_id = skeeper_details[0].id;
+            let product_id = req.params.id;
+            let configuration_db = await to_make();
+            await configuration_db('shop_product').del().where('id', product_id)
+                .where('skeeper_id', skeeper_id)
+                .catch((err) => {
+                    console.log("this is error while deleting products", err);
+                    res.send({ product_deleting_err: err })
+                })
+            // to send the success message for product inerstions
+            res.send({ msg: "Your product deleted Successfully!" })
+
+        } else {
+            res.send({ msg: "Plz login first" })
+        }
     } catch (error) {
         console.log(error)
         res.send({ err_msg: { here_Is_the_err: error } })
     }
 }
 
-exports.update_product = async (req,res) =>{
+exports.update_product = async (req, res) => {
     try {
         function product(product_name, description, price, size, color, Skeeper_id) {
-           this.product_name = product_name;
+            this.product_name = product_name;
             this.description = description;
             this.price = price;
             this.size = size;
@@ -229,46 +232,78 @@ exports.update_product = async (req,res) =>{
         }
         var i = req.body;
         let user_id = req.user_id.id;
-        let skeeper_details = await knex('shopkeer_details').select("id","db_name")
-                                                        .where('user_id',user_id);
+        let skeeper_details = await knex('shopkeer_details').select("id", "db_name")
+            .where('user_id', user_id);
         // to make configuration with db to insert products
-        async function to_make(){
+        async function to_make() {
             let user_id = req.user_id.id;
-            let skeeper_details = await knex('shopkeer_details').select("id","db_name")
-                                                        .where('user_id',user_id);
+            let skeeper_details = await knex('shopkeer_details').select("id", "db_name")
+                .where('user_id', user_id);
             let db_name = skeeper_details[0].db_name;
-                const db_config = require('knex')({
-                    client: 'mysql',
-                    connection: {
-                        host: '127.0.0.1',
-                        user: 'root',
-                        password: '',
-                        database: `${db_name}`
-                    }
-                },
-                    console.log(`${db_name} database connected..`));
-                    return db_config;
-        }   
-                  
-        if (skeeper_details.length!=0){
+            const db_config = require('knex')({
+                client: 'mysql',
+                connection: {
+                    host: '127.0.0.1',
+                    user: 'root',
+                    password: '',
+                    database: `${db_name}`
+                }
+            },
+                console.log(`${db_name} database connected..`));
+            return db_config;
+        }
+
+        if (skeeper_details.length != 0) {
             let s_id = skeeper_details[0].id;
-                let product_details = new product(i.product_name, i.description, i.price, i.size, i.color, s_id)
-                let configuration_db = await to_make();
-                console.log("this is url id",req.params.id)
-                await configuration_db('shop_product').update(product_details)
-                                                        .where('id',req.params.id)
-                .catch((err)=>{
-                    console.log("this is error while editing products",err);
-                    res.send({product_editing_err:err})
+            let product_details = new product(i.product_name, i.description, i.price, i.size, i.color, s_id)
+            let configuration_db = await to_make();
+            console.log("this is url id", req.params.id)
+            await configuration_db('shop_product').update(product_details)
+                .where('id', req.params.id)
+                .catch((err) => {
+                    console.log("this is error while editing products", err);
+                    res.send({ product_editing_err: err })
                 })
-                // to send the success message for product inerstions
-                res.send({msg:"Your product Updated Successfully!"})
-                    
-        }else{
-            res.send({msg:"Plz login first"})
+            // to send the success message for product inerstions
+            res.send({ msg: "Your product Updated Successfully!" })
+
+        } else {
+            res.send({ msg: "Plz login first" })
         }
     } catch (error) {
         console.log(error)
         res.send({ err_msg: { err_in_outer_catch: error } })
+    }
+}
+
+
+// to show all products from the different shopkeeper's database
+exports.display_allproduct = async (req, res) => {
+    try {
+        const allProducts = []
+        const db_details = await knex('shopkeer_details').select("db_name", "user_id");
+        for (i in db_details) {
+            let db = db_details[i].db_name;
+            var db_config = require('knex')({
+                client: 'mysql',
+                connection: {
+                    host: '127.0.0.1',
+                    user: 'root',
+                    password: '',
+                    database: `${db}`
+                }
+            },console.log(`fetching products form ${db} ...`));
+            var product_from = await db_config('shop_product').innerJoin('ecommerce_master.category','shop_product.category_id','ecommerce_master.category.id')
+                                                            .select('*');
+
+                for (j in product_from){
+                    allProducts.push(product_from[j])
+                }
+        }
+        console.log(product_from)
+        res.send({all_products:allProducts})
+    } catch (error) {
+        console.log(error)
+        res.send({ err_msg: error })
     }
 }

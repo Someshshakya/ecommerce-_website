@@ -11,11 +11,11 @@ const knex  = require('../models/db_config');
 /////// to create a table 
 module.exports  = knex.schema.hasTable('category')
                     .then(async (exists)=>{
-                        if (exists){
-                           return await knex.schema.table('category',(t)=>{
-                                t.dropForeign("product_id", "product_id")
-                                t.dropColumn('product_id');
-                            },console.log('coloumn dropped..'))
+                        if (!exists){
+                           return await knex.schema.createTable('category',(t)=>{
+                            t.increments('id').primary();
+                            t.string('category').unique();
+                            },console.log('category table dropped..'))
                         }
                     }).catch((err)=>{
                         console.log(err)

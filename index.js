@@ -18,7 +18,7 @@ app.use(cookieParser());
 // require('./models/shoping_cart')
 
 // to create category table
-// require('./models/category');
+require('./models/category');
 
 // to create orders table
 // require('./models/orders');

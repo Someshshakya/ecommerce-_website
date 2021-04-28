@@ -8,8 +8,8 @@ const knex  = require('../models/db_config');
 //                             t.increments('id').primary();
 //                             t.string('complete_address');
 //                             t.integer('phone');
-//                             t.integer("user_id").unsigned();
-//                             t.foreign('user_id').references('id').inTable('users');
+                            // t.integer("user_id").unsigned();
+                            // t.foreign('user_id').references('id').inTable('users');
 //                             },console.log("user's address table created "))
 //                         }
 //                     }).catch((err)=>{
