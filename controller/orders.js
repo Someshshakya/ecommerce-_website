@@ -13,7 +13,7 @@ exports.create_order = async (req,res) =>{
                 this.delievery_date = delievery_date;
                 this.user_id = user_id;
             }
-            // inserting item in the orders
+            // inserting item in the orders  
             var items_id = req.query.items_id;
             var shop_id = req.query.shop_id;
             var user_id = req.user_id.id;
@@ -106,4 +106,9 @@ exports.display_orders_by = async (req,res) =>{
         console.log(error)
      res.send({erMsg:error})   
     }
+}
+
+exports.del_order = async (req,res)=>{
+    console.log(req.params.id)
+    res.send({msg:"Your product delete successfuly!"})
 }

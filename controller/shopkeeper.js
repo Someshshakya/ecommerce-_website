@@ -9,107 +9,105 @@ const Connectt = new to_connect_db();
 // to create a shop for shoperkeeper
 exports.create_shop = async (req, res) => {
     try {
-        let owner_name = req.body.shopkeeper_name;
-        if (owner_name != undefined) {
-            const newName = owner_name.split(" ").join("_") + "_shope_tec";
-            // this will create your new database for individuals shopkeeper
-            const con = function connect_db() {
-                let name = req.body.shopkeeper_name;
-                const db_name = name.split(" ").join("_") + "_shope_tec";
-                const db_config = require('knex')({
-                    client: 'mysql',
-                    connection: {
-                        host: '127.0.0.1',
-                        user: 'root',
-                        password: '',
-                        database: `${db_name}`
-                    }
-                },
-                    console.log(`${db_name} database connected..`));
-                db_config.schema.hasTable('shop_product')
-                    .then(async (exists) => {
-                        if (!exists) {
-                            return await db_config.schema.createTable('shop_product', (t) => {
-                                t.increments('id').primary();
-                                t.string('product_name');
-                                t.string('price');
-                                t.string('description');
-                                t.string('size');
-                                t.string('color');
-                                t.integer("Skeeper_id").unsigned();
-                                t.foreign('Skeeper_id').references('id').inTable('ecommerce_master.shopkeer_details');
-                                t.integer("category_id").unsigned();
-                                t.foreign('category_id').references('id').inTable('ecommerce_master.category');
-                            }, console.log('shopkkeepers product table created..'))
+        let user_id = req.user_id.id;
+        let is_shop = await knex('users').select('is_shop').where('id', user_id);
+        is_shop = is_shop[0].is_shop
+        if (!is_shop) {
+            let owner_name = req.body.shopkeeper_name;
+            if (owner_name != undefined) {
+                const newName = owner_name.split(" ").join("_") + "_shope_tec";
+                // this will create your new database for individuals shopkeeper
+                const con = function connect_db() {
+                    let name = req.body.shopkeeper_name;
+                    const db_name = name.split(" ").join("_") + "_shope_tec";
+                    const db_config = require('knex')({
+                        client: 'mysql',
+                        connection: {
+                            host: '127.0.0.1',
+                            user: 'root',
+                            password: '',
+                            database: `${db_name}`
                         }
-                    }).catch((err) => {
-                        console.log(err)
-                    })
-                db_config.schema.hasTable('orders_recieved')
-                    .then(async (exists) => {
-                        if (!exists) {
-                            return await db_config.schema.createTable('orders_recieved', (t) => {
-                                t.increments('id').primary();
-                                t.string('buyer_id');
-                                t.string('product_id');
-                                t.string('shopkeer_id');
-                                t.string('size');
-                                t.string('color');
-                            }, console.log('orders_recieved table created successfully! '))
-                        }
-                    }).catch((err) => {
-                        console.log(err)
-                    })
+                    },
+                        console.log(`${db_name} database connected..`));
+                    db_config.schema.hasTable('shop_product')
+                        .then(async (exists) => {
+                            if (!exists) {
+                                return await db_config.schema.createTable('shop_product', (t) => {
+                                    t.increments('id').primary();
+                                    t.string('product_name');
+                                    t.string('price');
+                                    t.string('description');
+                                    t.string('size');
+                                    t.string('color');
+                                    t.integer("Skeeper_id").unsigned();
+                                    t.foreign('Skeeper_id').references('id').inTable('ecommerce_master.shopkeer_details');
+                                    t.integer("category_id").unsigned();
+                                    t.foreign('category_id').references('id').inTable('ecommerce_master.category');
+                                }, console.log('shopkkeepers product table created..'))
+                            }
+                        }).catch((err) => {
+                            console.log(err)
+                        })
+                    db_config.schema.hasTable('orders_recieved')
+                        .then(async (exists) => {
+                            if (!exists) {
+                                return await db_config.schema.createTable('orders_recieved', (t) => {
+                                    t.increments('id').primary();
+                                    t.string('buyer_id');
+                                    t.string('product_id');
+                                    t.string('shopkeer_id');
+                                    t.string('size');
+                                    t.string('color');
+                                }, console.log('orders_recieved table created successfully! '))
+                            }
+                        }).catch((err) => {
+                            console.log(err)
+                        })
 
 
 
+                }
+                // wait for 4 sec to create the db
+                setTimeout(con, 4000);
+                await Services.create_db(newName);
+                // await Connectt.toCreate_table(c)
+
+                function shopkeeper(user_id, db_name, shopkeeper_name, email, shop_name, description, gst_no, address_line_1, address_line_2, state, city, country, mobile_no, pin_code) {
+                    this.user_id = user_id;
+                    this.db_name = db_name;
+                    this.shopkeeper_name = shopkeeper_name;
+                    this.email = email;
+                    this.shop_name = shop_name;
+                    this.description = description;
+                    this.gst_no = gst_no;
+                    this.address_line_1 = address_line_1;
+                    this.address_line_2 = address_line_2;
+                    this.state = state;
+                    this.city = city;
+                    this.country = country;
+                    this.mobile_no = mobile_no;
+                    this.pin_code = pin_code;
+                }
+                var b = req.body;
+                let newShopkeeper = new shopkeeper(user_id, newName, b.shopkeeper_name, b.email, b.shop_name, b.description, b.gst_no, b.address_line_1, b.address_line_2, b.state, b.city, b.country, b.mobile_no, b.pin_code);
+                const Shopkeeper_id = await knex('shopkeer_details').insert(newShopkeeper);
+                //to make the user _isShop true if he/she creates a shope
+                await knex('users').update('is_shop', 1)
+                    .where('id', user_id);
+                if (Shopkeeper_id != 0) {
+                    let keeper_id = Shopkeeper_id[0];
+                    res.cookie('sKeeper_id', keeper_id);
+                }
+                // require('../models/shopkeeper_db/shopkeeper_product');
+
+                res.send({ msg: "You have been Registered SuccessFully >>>>> " })
+            } else {
+                res.send({ msg: "Plzzz Enter the name of the owner" })
             }
-            // wait for 5 sec to create the db
-            setTimeout(con, 4000);
-            await Services.create_db(newName);
-            // await Connectt.toCreate_table(c)
-
-
-            // to create the table to register shopkeepers in db
-            // require('../models/shopkeeper_db/shop_conifg');
-            function shopkeeper(LastModifiedDate, CreatedDate, isDeleted, user_id, db_name, shopkeeper_name, email, shop_name, description, gst_no, address_line_1, address_line_2, state, city, country, mobile_no, pin_code) {
-                this.LastModifiedDate = LastModifiedDate;
-                this.CreatedDate = CreatedDate;
-                this.isDeleted = isDeleted;
-                this.user_id = user_id;
-                this.db_name = db_name;
-                this.shopkeeper_name = shopkeeper_name;
-                this.email = email;
-                this.shop_name = shop_name;
-                this.description = description;
-                this.gst_no = gst_no;
-                this.address_line_1 = address_line_1;
-                this.address_line_2 = address_line_2;
-                this.state = state;
-                this.city = city;
-                this.country = country;
-                this.mobile_no = mobile_no;
-                this.pin_code = pin_code;
-            }
-            var b = req.body;
-            var user_id = req.user_id.id;
-            var user_id = req.user_id.id;
-            var LastModifiedDate = null;
-            var CreatedDate = moment().format("YYYY MM DD");
-            var isDeleted = 0;
-            let newShopkeeper = new shopkeeper(LastModifiedDate, CreatedDate, isDeleted, user_id, newName, b.shopkeeper_name, b.email, b.shop_name, b.description, b.gst_no, b.address_line_1, b.address_line_2, b.state, b.city, b.country, b.mobile_no, b.pin_code);
-            const Shopkeeper_id = await knex('shopkeer_details').insert(newShopkeeper);
-            if (Shopkeeper_id != 0) {
-                let keeper_id = Shopkeeper_id[0];
-                res.cookie('sKeeper_id', keeper_id);
-            }
-            // require('../models/shopkeeper_db/shopkeeper_product');
-
-            res.send({ msg: "You have been Registered SuccessFully >>>>> " })
         } else {
-            res.send({ msg: "Plzzz Enter the name of the owner" })
+            res.send({ msg: "Alreday you have your shop..." })
         }
-
     } catch (error) {
         console.log(error)
         res.send({ err_msg: error })
@@ -174,7 +172,7 @@ exports.insert_product = async (req, res) => {
 }
 
 
-// to delete the product
+// to delete the product by its id
 exports.delete_product = async (req, res) => {
     try {
         async function to_make() {
@@ -220,6 +218,7 @@ exports.delete_product = async (req, res) => {
     }
 }
 
+// to update the product by its id
 exports.update_product = async (req, res) => {
     try {
         function product(product_name, description, price, size, color, Skeeper_id) {
@@ -292,18 +291,141 @@ exports.display_allproduct = async (req, res) => {
                     password: '',
                     database: `${db}`
                 }
-            },console.log(`fetching products form ${db} ...`));
-            var product_from = await db_config('shop_product').innerJoin('ecommerce_master.category','shop_product.category_id','ecommerce_master.category.id')
-                                                            .select('*');
+            }, console.log(`fetching products form ${db} ...`));
+            var product_from = await db_config('shop_product').innerJoin('ecommerce_master.category', 'shop_product.category_id', 'ecommerce_master.category.id')
+                .innerJoin('ecommerce_master.shopkeer_details', 'shop_product.Skeeper_id', 'ecommerce_master.shopkeer_details.id')
+                .select('shop_product.product_name',
+                    'shop_product.price',
+                    'shop_product.id',
+                    'shop_product.description',
+                    'shop_product.size',
+                    'shop_product.color',
+                    'shop_product.Skeeper_id',
+                    'ecommerce_master.category.category',
+                    'ecommerce_master.category.id as category_id',
+                    'ecommerce_master.shopkeer_details.shopkeeper_name',
+                    'ecommerce_master.shopkeer_details.shop_name',
+                    'ecommerce_master.shopkeer_details.description as shop_description'
+                );
 
-                for (j in product_from){
-                    allProducts.push(product_from[j])
-                }
+            for (j in product_from) {
+                var shop_obj = { shopkeeper_name: "", shop_name: "", shop_description: "", Skeeper_id: "" }
+                var cat_obj = { category: "", category_id: "" }
+
+                let eachh = product_from[j];
+                cat_obj.category = eachh.category;
+                cat_obj.category_id = eachh.category_id;
+
+                delete eachh.category_id;
+                delete eachh.category;
+
+                eachh.category = cat_obj;
+
+                shop_obj.shopkeeper_name = eachh.shopkeeper_name;
+                shop_obj.shop_name = eachh.shop_name;
+                shop_obj.shop_description = eachh.shop_description;
+                shop_obj.Skeeper_id = eachh.Skeeper_id;
+
+                eachh['shop_details'] = shop_obj;
+
+                delete eachh.shopkeeper_name;
+                delete eachh.shop_name;
+                delete eachh.shop_description;
+                delete eachh.Skeeper_id;
+
+                allProducts.push(eachh);
+            }
         }
-        console.log(product_from)
-        res.send({all_products:allProducts})
+        if (allProducts.length != 0) {
+            res.send({ all_products: allProducts })
+        } else {
+        res.send({ msg: "Plz provide the category id" })
+        } 
     } catch (error) {
         console.log(error)
         res.send({ err_msg: error })
     }
 }
+
+
+
+exports.get_by_cat = async (req, res) => {
+    try {
+        var cat_Id = req.params.id;
+        if (cat_Id != undefined) {
+            var allProducts = []
+            const db_details = await knex('shopkeer_details').select("db_name", "user_id");
+            for (i in db_details) {
+                let db = db_details[i].db_name;
+                var db_config = require('knex')({
+                    client: 'mysql',
+                    connection: {
+                        host: '127.0.0.1',
+                        user: 'root',
+                        password: '',
+                        database: `${db}`
+                    }
+                }, console.log(`fetching products form ${db} ...`));
+                // var shop_detail = await db_config('shop_product')
+                //         .innerJoin('ecommerce_master.category','shop_product.Skeeper_id','ecommerce_master.shopkeer_details.id')
+                var product_from = await db_config('shop_product').innerJoin('ecommerce_master.category', 'shop_product.category_id', 'ecommerce_master.category.id')
+                    .innerJoin('ecommerce_master.shopkeer_details', 'shop_product.Skeeper_id', 'ecommerce_master.shopkeer_details.id')
+                    .select('shop_product.product_name',
+                        'shop_product.price',
+                        'shop_product.id',
+                        'shop_product.description',
+                        'shop_product.size',
+                        'shop_product.color',
+                        'shop_product.Skeeper_id',
+                        'ecommerce_master.category.category',
+                        'ecommerce_master.category.id as category_id',
+                        'ecommerce_master.shopkeer_details.shopkeeper_name',
+                        'ecommerce_master.shopkeer_details.shop_name',
+                        'ecommerce_master.shopkeer_details.description as shop_description'
+                    )
+                    .where('ecommerce_master.category.id', cat_Id);
+
+
+                for (j in product_from) {
+                    var shop_obj = { shopkeeper_name: "", shop_name: "", shop_description: "", Skeeper_id: "" }
+                    var cat_obj = { category: "", category_id: "" }
+
+                    let eachh = product_from[j];
+                    cat_obj.category = eachh.category;
+                    cat_obj.category_id = eachh.category_id;
+
+                    delete eachh.category_id;
+                    delete eachh.category;
+
+                    eachh.category = cat_obj;
+
+                    shop_obj.shopkeeper_name = eachh.shopkeeper_name;
+                    shop_obj.shop_name = eachh.shop_name;
+                    shop_obj.shop_description = eachh.shop_description;
+                    shop_obj.Skeeper_id = eachh.Skeeper_id;
+
+                    eachh['shop_details'] = shop_obj;
+
+                    delete eachh.shopkeeper_name;
+                    delete eachh.shop_name;
+                    delete eachh.shop_description;
+                    delete eachh.Skeeper_id;
+
+                    allProducts.push(eachh);
+                }
+            }
+            if (allProducts.length != 0) {
+                res.send({ all_products: allProducts })
+            } else {
+                res.send({ msg: `Ops No products found with your category_id ${req.params.id} ...!` })
+            }
+
+        } else {
+            res.send({ msg: "Plz provide the category id" })
+        }
+    } catch (error) {
+        console.log(error)
+        res.send({ err_msg: error })
+    }
+}
+

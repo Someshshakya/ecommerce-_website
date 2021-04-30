@@ -19,6 +19,9 @@ router.put('/edit_product/:id',Verify,sKeeper.update_product);
 // get request to display all products
 router.get('/products',sKeeper.display_allproduct);
 
+// get request to display all products by category id 
+router.get('/category/:id',sKeeper.get_by_cat);
+
 module.exports = router;
 
 // {
