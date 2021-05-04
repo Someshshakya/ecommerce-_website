@@ -1,5 +1,6 @@
 const knex = require('../models/db_config');
 
+// to create the orders
 exports.create_order = async (req,res) =>{
     try {
         var items_id = req.query.items_id;
@@ -18,11 +19,28 @@ exports.create_order = async (req,res) =>{
             var shop_id = req.query.shop_id;
             var user_id = req.user_id.id;
             var placed_date = null;
-            var delievery_date = null;
-
+            var myCurrentDate=new Date();
+            var delievery_date=new Date(myCurrentDate);
+                delievery_date.setDate(delievery_date.getDate() + 5);
+            var placed_date = new Date(myCurrentDate);
+                placed_date.setDate(placed_date.getDate() + 6);
             let new_orders = new orders_creat(items_id, shop_id, placed_date, delievery_date, user_id);
-            await knex('orders').insert(new_orders);
-            res.send({msg:"You have placed your order successfully!"})
+            await knex('orders').insert(new_orders)
+            .then(async(order_id)=>{
+                if (order_id){
+                    
+                    function payment(order_id, user_id, signature, payment_id){
+                        this.order_id = order_id;
+                        this.user_id = user_id;
+                        this.signature = signature;
+                        this.payment_id = payment_id;
+                    }
+                var payment_id = 'payment Id';
+                var payments_details = new payment(order_id[0], user_id, req.body.signature, payment_id)
+                await knex('payment').insert(payments_details);
+                }
+            })
+                         res.send({msg:"You have placed your order successfully!"})
         }else{
             res.send({msg:"plz selelct the items first"})
         }
@@ -34,7 +52,7 @@ exports.create_order = async (req,res) =>{
     }
 }
 
-
+// to display my orders
 exports.myorders = async (req,res) =>{
     try {
     var user_id = req.user_id.id;
@@ -107,8 +125,21 @@ exports.display_orders_by = async (req,res) =>{
      res.send({erMsg:error})   
     }
 }
-
+ 
 exports.del_order = async (req,res)=>{
-    console.log(req.params.id)
-    res.send({msg:"Your product delete successfuly!"})
+    try {
+        var user_id = req.user_id.id;
+        var order_id = req.params.id;
+        let check = await knex('orders').where('id',order_id).update('isDeleted',1);
+        if (check){
+            res.send({msg:`Your product delete successfuly! with id > ${req.params.id}`})
+        }else{
+            res.send({msg:"plz debug "})
+        }
+    } catch (error) {
+        console.log("this is err while deleting orders")
+        console.log(error)
+        res.send({ergmsg:error})
+    }
+    
 }

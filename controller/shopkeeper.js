@@ -306,7 +306,7 @@ exports.display_allproduct = async (req, res) => {
                     'ecommerce_master.shopkeer_details.shopkeeper_name',
                     'ecommerce_master.shopkeer_details.shop_name',
                     'ecommerce_master.shopkeer_details.description as shop_description'
-                );
+              );
 
             for (j in product_from) {
                 var shop_obj = { shopkeeper_name: "", shop_name: "", shop_description: "", Skeeper_id: "" }
