@@ -14,7 +14,7 @@ passport.use(new Strategy_google({
     callbackURL : process.env.CALL_BACK_URL,
     passReqToCallback : true
 },function(request, accessToken, refreshToken, profile,done){
-    console.log("You logged in successfuly! ")
+    console.log("this is accessToken",request)
     return done(null,profile)
 }
 ));

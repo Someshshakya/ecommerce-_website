@@ -1,13 +1,20 @@
 const knex = require('../models/db_config');
 
 exports.create_address = async (req,res)=>{
+    function users_address(user_id, complete_address, phone) {
+        this.user_id = user_id;
+        this.complete_address= complete_address;
+        this.phone = phone;
+    }
     try {
         if (Object.keys(req.body).length === 0){
-            res.send({Msg:"Plz enter your message"})
+            res.send({Msg:"Plz enter your address"})
         }else{
-            let user_id = req.user_id.id;
-            req.body['user_id'] = user_id;            
-            let add_id = await knex('users_address').insert(req.body).where('user_id',user_id);
+            var body = req.body;
+            var addre = new users_address(req.user_id.id,body.complete_address,body.phone);
+            let user_id = req.user_id.id;           
+            await knex('users_address').insert(addre).where('user_id',user_id);
+            console.log({msg:"Your address added successfuly!"})
             res.send({msg:"Your address added successfuly!"})
         }
         

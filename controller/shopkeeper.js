@@ -210,7 +210,7 @@ exports.delete_product = async (req, res) => {
             res.send({ msg: "Your product deleted Successfully!" })
 
         } else {
-            res.send({ msg: "Plz login first" })
+            res.send({ msg: "You are not a owner of the product" })
         }
     } catch (error) {
         console.log(error)

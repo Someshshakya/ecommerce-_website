@@ -53,17 +53,26 @@ exports.registration = async(req,res)=>{
 
 // to verify the user 
 exports.Usrs_verification = async(req,res)=>{
-        let otp = req.cookies.otp;
-        let id = req.cookies.id;
-        let User_otp = req.body.otp;
-        if (otp==User_otp){
-            await knex('users').update("status",true)
-            .where('id',id)
-            res.clearCookie("id");
-            res.clearCookie("otp");
-            res.send({msg: "You have been verified Successfully!  "})
-        }else{
-            res.send({Not_Valid: "Your OTP is not valid!"})
+        try {
+            if (req.body.otp!=undefined){
+                let otp = req.cookies.otp;
+                let id = req.user_id.id;
+                let User_otp = req.body.otp;
+                if (otp==User_otp){
+                    await knex('users').update("status",true)
+                    .where('id',id)
+                    res.clearCookie("id");
+                    res.clearCookie("otp");
+                    res.send({msg: "You have been verified Successfully!  "})
+                }else{
+                    res.send({Not_Valid: "Your OTP is not valid!"})
+                }
+            }else{
+               res.send({msg:'plz enter your otp'})
+            }
+        } catch (error) {
+           console.log(error) 
+           res.send({verify_errr:error})
         }
     }
 

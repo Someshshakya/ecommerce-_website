@@ -82,19 +82,3 @@ exports.myorder = async(req,res)=>{
     }
 }
 
-// to display your total amount
-exports.payment = async(req,res)=>{
-    try {
-        let user_id = req.user_id.id;
-        var total_amount = 0;
-        let amount = await knex('shopping_cart').select("price").where('user_id',user_id);
-        for (let i = 0; i<amount.length;i++){
-            let price = parseInt(amount[i].price)
-            total_amount += price
-        }
-        res.send({Total_amount:total_amount})
-
-    } catch (error) {
-        res.send({errMsg:error})
-    }
-}
