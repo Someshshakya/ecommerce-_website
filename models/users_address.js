@@ -15,3 +15,5 @@ module.exports  = knex.schema.hasTable('users_address')
                     }).catch((err)=>{
                         console.log(err)
                     })
+                    ;lkjsd
+                    
